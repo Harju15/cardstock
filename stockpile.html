@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Stock — Stock Pile</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c; --gold-light: #f0d080; --gold-dim: #7a6030;
+    --gold-pale: rgba(201,168,76,0.10); --black: #0a0a0a;
+    --card-bg: #16140d; --card-border: rgba(201,168,76,0.18);
+    --ink: #f0ead8; --ink-dim: #9a9070; --ink-muted: #5a5440;
+    --up: #4eca8b; --down: #e05555;
+  }
+
+  html, body { min-height: 100%; background: var(--black); color: var(--ink); font-family: 'Raleway', sans-serif; overflow-x: hidden; }
+
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.07) 0%, transparent 60%);
+  }
+
+  /* NAVBAR */
+  .navbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 60px;
+    background: rgba(10,10,8,0.92); backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .nav-logo {
+    font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900;
+    color: var(--ink); letter-spacing: 0.04em; text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo em { font-style: normal; color: var(--gold); }
+  .nav-logo-icon {
+    width: 30px; height: 30px; background: var(--gold-pale);
+    border: 1px solid var(--card-border); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+  .nav-links a {
+    display: block; padding: 7px 12px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim);
+    text-decoration: none; border-radius: 7px; transition: color 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-links a:hover  { color: var(--gold); background: var(--gold-pale); }
+  .nav-links a.active { color: var(--gold-light); background: rgba(201,168,76,0.14); }
+
+  .nav-avatar {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold-dim);
+    cursor: pointer; background: linear-gradient(135deg, #2a3a1a, #1a2a3a);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* Hamburger for mobile */
+  .nav-hamburger {
+    display: none; flex-direction: column; gap: 5px; cursor: pointer;
+    background: none; border: none; padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--ink-dim); border-radius: 2px; transition: all 0.2s; }
+
+  .nav-mobile {
+    display: none; position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
+    background: rgba(10,10,8,0.97); backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--card-border); padding: 12px 16px 16px;
+    flex-direction: column; gap: 4px;
+  }
+  .nav-mobile.open { display: flex; }
+  .nav-mobile a {
+    display: block; padding: 12px 16px; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim);
+    text-decoration: none; border-radius: 8px; transition: color 0.2s, background 0.2s;
+  }
+  .nav-mobile a:hover, .nav-mobile a.active { color: var(--gold); background: var(--gold-pale); }
+
+  /* PAGE */
+  .page { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 28px; gap: 12px; flex-wrap: wrap;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .page-title { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: 0.03em; line-height: 1; }
+  .page-title span {
+    display: block; font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 5px;
+  }
+
+  .page-date { font-size: 11px; color: var(--ink-muted); letter-spacing: 0.06em; text-align: right; }
+  .page-date strong { display: block; font-size: 13px; color: var(--ink-dim); font-weight: 600; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); margin-bottom: 28px; animation: fadeUp 0.5s 0.1s ease both; }
+
+  /* GRID */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+
+  .stat-pill {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
+    padding: 18px 16px 14px; position: relative; overflow: hidden;
+    cursor: pointer; text-decoration: none; display: block;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stat-pill::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.5; transition: opacity 0.2s;
+  }
+  .stat-pill:hover, .stat-pill:active {
+    border-color: var(--gold-dim); transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+  }
+  .stat-pill:hover::before { opacity: 1; }
+
+  .stat-pill-label { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--gold-light); margin-bottom: 10px; }
+  .stat-pill-value { font-size: 11px; font-weight: 600; color: var(--ink-dim); margin-bottom: 3px; }
+  .stat-pill-change { font-size: 10px; font-weight: 600; margin-top: 2px; }
+  .stat-pill-change.up { color: var(--up); }
+  .stat-pill-change.down { color: var(--down); }
+  .stat-pill-icon { position: absolute; top: 12px; right: 14px; font-size: 24px; opacity: 0.1; transition: opacity 0.2s; }
+  .stat-pill:hover .stat-pill-icon { opacity: 0.2; }
+  .stat-pill-arrow { position: absolute; bottom: 12px; right: 14px; font-size: 14px; color: var(--gold-dim); transition: color 0.2s, transform 0.2s; }
+  .stat-pill:hover .stat-pill-arrow { color: var(--gold); transform: translateX(3px); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 860px)  { .stats-row { grid-template-columns: repeat(3, 1fr); } .nav-links { display: none; } .nav-hamburger { display: flex; } }
+  @media (max-width: 600px)  { .stats-row { grid-template-columns: repeat(2, 1fr); } .page { padding: 24px 14px 48px; } .stat-pill { padding: 14px 12px 12px; } .stat-pill-label { font-size: 11px; } }
+  @media (max-width: 360px)  { .stats-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="2" width="14" height="20" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+        <rect x="9" y="5" width="14" height="20" rx="2" fill="#1a1a1a" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="16" cy="15" r="3" fill="#c9a84c" opacity="0.8"/>
+        <path d="M12 10 L20 10" stroke="#c9a84c" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+    </div>
+    Card<em>Stock</em>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#" class="active">Stock Pile</a></li>
+    <li><a href="#">Market</a></li>
+    <li><a href="index.html">Portfolio</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-avatar">CS</div>
+  </div>
+</nav>
+
+<div class="nav-mobile" id="navMobile">
+  <a href="#">Home</a>
+  <a href="#" class="active">Stock Pile</a>
+  <a href="#">Market</a>
+  <a href="index.html">Portfolio</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title"><span>Stock Pile</span>View Inventory</div>
+    <div class="page-date"><strong>April 4, 2026</strong>Last updated: 2 minutes ago</div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="stats-row">
+    <a class="stat-pill" href="stockpiledetails.html?category=pokemon">
+      <div class="stat-pill-label">Pokémon</div>
+      <div class="stat-pill-value">Cards: 230</div>
+      <div class="stat-pill-value">Value: $6,830</div>
+      <div class="stat-pill-change up">▲ +$620 today</div>
+      <div class="stat-pill-icon">◈</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=yugioh">
+      <div class="stat-pill-label">Yugioh</div>
+      <div class="stat-pill-value">Cards: 85</div>
+      <div class="stat-pill-value">Value: $2,410</div>
+      <div class="stat-pill-change up">▲ +3 this week</div>
+      <div class="stat-pill-icon">⬡</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=basketball">
+      <div class="stat-pill-label">Basketball</div>
+      <div class="stat-pill-value">Cards: 47</div>
+      <div class="stat-pill-value">Value: $3,200</div>
+      <div class="stat-pill-change up">▲ +$1.20</div>
+      <div class="stat-pill-icon">◇</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=baseball">
+      <div class="stat-pill-label">Baseball</div>
+      <div class="stat-pill-value">Cards: 31</div>
+      <div class="stat-pill-value">Value: $1,590</div>
+      <div class="stat-pill-change down">▼ -$88 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=soccer">
+      <div class="stat-pill-label">Soccer</div>
+      <div class="stat-pill-value">Cards: 19</div>
+      <div class="stat-pill-value">Value: $940</div>
+      <div class="stat-pill-change down">▼ -$12 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=football">
+      <div class="stat-pill-label">Football</div>
+      <div class="stat-pill-value">Cards: 22</div>
+      <div class="stat-pill-value">Value: $1,120</div>
+      <div class="stat-pill-change down">▼ -$44 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=onepiece">
+      <div class="stat-pill-label">One Piece</div>
+      <div class="stat-pill-value">Cards: 64</div>
+      <div class="stat-pill-value">Value: $2,780</div>
+      <div class="stat-pill-change down">▼ -$22 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=unionarena">
+      <div class="stat-pill-label">Union Arena</div>
+      <div class="stat-pill-value">Cards: 38</div>
+      <div class="stat-pill-value">Value: $1,450</div>
+      <div class="stat-pill-change down">▼ -$18 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=vintagesports">
+      <div class="stat-pill-label">Vintage Sports</div>
+      <div class="stat-pill-value">Cards: 12</div>
+      <div class="stat-pill-value">Value: $8,200</div>
+      <div class="stat-pill-change down">▼ -$200 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+    <a class="stat-pill" href="stockpiledetails.html?category=vintagepokemon">
+      <div class="stat-pill-label">Vintage Pokémon</div>
+      <div class="stat-pill-value">Cards: 9</div>
+      <div class="stat-pill-value">Value: $14,300</div>
+      <div class="stat-pill-change down">▼ -$88 this month</div>
+      <div class="stat-pill-icon">◎</div><div class="stat-pill-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navMobile = document.getElementById('navMobile');
+  hamburger.addEventListener('click', () => navMobile.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (!hamburger.contains(e.target) && !navMobile.contains(e.target)) navMobile.classList.remove('open');
+  });
+</script>
+</body>
+</html>

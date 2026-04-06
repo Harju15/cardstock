@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Stock — PSA Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--gold:#c9a84c;--gold-light:#f0d080;--gold-dim:#7a6030;--gold-pale:rgba(201,168,76,0.10);--black:#0a0a0a;--card-bg:#16140d;--card-border:rgba(201,168,76,0.18);--ink:#f0ead8;--ink-dim:#9a9070;--ink-muted:#5a5440;--up:#4eca8b;--down:#e05555;--blue:#5b9cf6;}
+  html,body{min-height:100%;background:var(--black);color:var(--ink);font-family:'Raleway',sans-serif;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,0.07) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+  .navbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:rgba(10,10,8,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--card-border);}
+  .nav-logo{font-family:'Cinzel',serif;font-size:18px;font-weight:900;color:var(--ink);letter-spacing:0.04em;text-decoration:none;display:flex;align-items:center;gap:8px;}
+  .nav-logo em{font-style:normal;color:var(--gold);}
+  .nav-logo-icon{width:30px;height:30px;background:var(--gold-pale);border:1px solid var(--card-border);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .nav-links{display:flex;align-items:center;gap:2px;list-style:none;}
+  .nav-links a{display:block;padding:7px 12px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;border-radius:7px;transition:color 0.2s,background 0.2s;}
+  .nav-links a:hover{color:var(--gold);background:var(--gold-pale);}
+  .nav-links a.active{color:var(--gold-light);background:rgba(201,168,76,0.14);}
+  .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--gold-dim);cursor:pointer;background:linear-gradient(135deg,#2a3a1a,#1a2a3a);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;}
+  .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;-webkit-tap-highlight-color:transparent;}
+  .nav-hamburger span{display:block;width:22px;height:2px;background:var(--ink-dim);border-radius:2px;}
+  .nav-mobile{display:none;position:fixed;top:60px;left:0;right:0;z-index:99;background:rgba(10,10,8,0.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--card-border);padding:12px 16px 16px;flex-direction:column;gap:4px;}
+  .nav-mobile.open{display:flex;}
+  .nav-mobile a{display:block;padding:12px 16px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;border-radius:8px;}
+  .nav-mobile a:hover,.nav-mobile a.active{color:var(--gold);background:var(--gold-pale);}
+
+  .page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px 60px;}
+
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;margin-bottom:22px;transition:color 0.2s;}
+  .back-link:hover{color:var(--gold);}
+
+  .state-box{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:48px 32px;text-align:center;}
+  .state-icon{font-size:44px;margin-bottom:16px;opacity:0.35;}
+  .state-title{font-family:'Cinzel',serif;font-size:17px;color:var(--ink);margin-bottom:8px;}
+  .state-sub{font-size:12px;color:var(--ink-muted);line-height:1.6;}
+  .spinner{width:32px;height:32px;border:3px solid rgba(201,168,76,0.15);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 18px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .hero{display:grid;grid-template-columns:160px 1fr;gap:24px;margin-bottom:24px;animation:fadeUp 0.4s ease both;}
+  .card-thumb{width:160px;height:224px;border-radius:12px;border:2px solid var(--gold-dim);overflow:hidden;background:linear-gradient(145deg,#1a1200,#0d0d0d);box-shadow:0 10px 32px rgba(0,0,0,0.7);flex-shrink:0;}
+  .card-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;opacity:0.2;}
+  .hero-info{display:flex;flex-direction:column;justify-content:center;gap:6px;}
+  .hero-label{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);}
+  .hero-name{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:var(--ink);line-height:1.1;margin-bottom:2px;}
+  .hero-sub{font-size:13px;color:var(--ink-dim);margin-bottom:12px;}
+  .grade-display{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:84px;height:84px;border-radius:12px;border:2px solid;margin-bottom:14px;}
+  .grade-display.g10{background:rgba(78,202,139,0.1);border-color:rgba(78,202,139,0.5);color:#4eca8b;}
+  .grade-display.g9 {background:rgba(91,156,246,0.1);border-color:rgba(91,156,246,0.5);color:#5b9cf6;}
+  .grade-display.g8 {background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.4);color:var(--gold);}
+  .grade-display.gx {background:rgba(160,100,200,0.1);border-color:rgba(160,100,200,0.4);color:#c084fc;}
+  .grade-display-num{font-family:'Cinzel',serif;font-size:32px;font-weight:900;line-height:1;}
+  .grade-display-label{font-size:8px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;opacity:0.7;margin-top:2px;}
+  .hero-cert{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .cert-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(91,156,246,0.1);border:1px solid rgba(91,156,246,0.3);border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--blue);text-decoration:none;transition:background 0.2s;}
+  .cert-pill:hover{background:rgba(91,156,246,0.2);}
+  .cert-pill-label{font-size:9px;color:var(--ink-muted);letter-spacing:0.08em;text-transform:uppercase;}
+  .verify-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.06em;}
+  .verify-badge.authentic{background:rgba(78,202,139,0.1);border:1px solid rgba(78,202,139,0.3);color:var(--up);}
+  .verify-badge.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);margin:22px 0;}
+  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  .data-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;}
+  .data-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.4;}
+  .data-card.full{grid-column:1/-1;}
+  .data-card-title{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:6px;}
+  .field-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.06);gap:10px;}
+  .field-row:last-child{border-bottom:none;}
+  .field-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0;}
+  .field-value{font-size:12px;font-weight:600;color:var(--ink);text-align:right;}
+  .field-value.gold{color:var(--gold-light);font-family:'Cinzel',serif;}
+  .field-value.green{color:var(--up);}
+  .field-value.blue{color:var(--blue);}
+  .field-value.dim{color:var(--ink-muted);font-style:italic;}
+  .pop-grid{display:flex;flex-direction:column;gap:9px;margin-top:4px;}
+  .pop-row{display:grid;grid-template-columns:68px 1fr 48px;align-items:center;gap:8px;}
+  .pop-grade-label{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--ink-dim);text-align:right;}
+  .pop-bar-wrap{height:9px;background:rgba(201,168,76,0.06);border-radius:5px;overflow:hidden;}
+  .pop-bar{height:100%;border-radius:5px;transition:width 0.8s cubic-bezier(.4,0,.2,1);}
+  .pop-count{font-size:11px;font-weight:700;color:var(--ink-dim);text-align:right;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+  @media(max-width:860px){.nav-links{display:none;}.nav-hamburger{display:flex;}.data-grid{grid-template-columns:1fr;}}
+  @media(max-width:560px){.hero{grid-template-columns:1fr;}.card-thumb{width:100%;height:180px;}.hero-name{font-size:20px;}.page{padding:20px 14px 48px;}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="2" width="14" height="20" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+        <rect x="9" y="5" width="14" height="20" rx="2" fill="#1a1a1a" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="16" cy="15" r="3" fill="#c9a84c" opacity="0.8"/>
+        <path d="M12 10 L20 10" stroke="#c9a84c" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+    </div>
+    Card<em>Stock</em>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="stockpile.html" class="active">Stock Pile</a></li>
+    <li><a href="#">Market</a></li>
+    <li><a href="index.html">Portfolio</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    <div class="nav-avatar">CS</div>
+  </div>
+</nav>
+
+<div class="nav-mobile" id="navMobile">
+  <a href="#">Home</a>
+  <a href="stockpile.html" class="active">Stock Pile</a>
+  <a href="#">Market</a>
+  <a href="index.html">Portfolio</a>
+</div>
+
+<div class="page">
+  <a class="back-link" id="backLink" href="stockpiledetails.html">← Back to Stock</a>
+  <div id="content">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Fetching PSA Data…</div>
+      <div class="state-sub">Contacting PSA registry</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const hamburger=document.getElementById('hamburger'),navMobile=document.getElementById('navMobile');
+  hamburger.addEventListener('click',()=>navMobile.classList.toggle('open'));
+  document.addEventListener('click',e=>{if(!hamburger.contains(e.target)&&!navMobile.contains(e.target))navMobile.classList.remove('open');});
+
+  const API_BASE='http://localhost:3001/api';
+  const params=new URLSearchParams(window.location.search);
+  const certNumber=params.get('cert'), cardName=params.get('name')||'Unknown Card', cardImg=params.get('img')||'';
+  document.title=`PSA · ${cardName}`;
+  const content=document.getElementById('content');
+
+  async function loadPSAData() {
+    if(!certNumber){showError('No cert number provided.','Add a cert number to your card data.');return;}
+    try{
+      const certRes=await fetch(`${API_BASE}/psa/cert/${certNumber}`);
+      if(!certRes.ok) throw new Error(`PSA returned ${certRes.status}`);
+      const cert=await certRes.json();
+      let popData=null;
+      try{const popRes=await fetch(`${API_BASE}/psa/population?name=${encodeURIComponent(cert.subject)}&year=${cert.year||''}`);if(popRes.ok)popData=await popRes.json();}catch{}
+      renderPage(cert,popData);
+    }catch(err){showError('Could not load PSA data',`${err.message}. Make sure your backend is running at ${API_BASE}.`);}
+  }
+
+  function gradeClass(g){const n=parseInt(g);if(n===10)return'g10';if(n===9)return'g9';if(n===8)return'g8';return'gx';}
+  function barColor(grade){const n=parseInt(grade);if(n===10)return'#4eca8b';if(n>=8)return'#5b9cf6';if(n>=6)return'#c9a84c';return'#e05555';}
+
+  function renderPage(cert,popData){
+    const popEntry=popData?.results?.find(r=>String(r.specNumber)===String(cert.specNo))||popData?.results?.[0]||null;
+    const pop=popEntry?.population||null;
+    const popGrades=pop?[{label:'PSA 10',value:pop.psa10},{label:'NM-MT+',value:pop.nmMtP},{label:'NM-MT 8',value:pop.nmMt},{label:'EX-MT 6',value:pop.exMt},{label:'EX 5',value:pop.ex},{label:'VG-EX 4',value:pop.vgEx},{label:'VG 3',value:pop.vg},{label:'Auth',value:pop.auth}]:[];
+    const maxPop=pop?Math.max(...popGrades.map(g=>g.value||0),1):1;
+
+    content.innerHTML=`
+      <div class="hero">
+        <div class="card-thumb">${cardImg?`<img src="${cardImg}" alt="${cardName}">`:`<div class="card-thumb-placeholder">🃏</div>`}</div>
+        <div class="hero-info">
+          <div class="hero-label">PSA Certified Card</div>
+          <div class="hero-name">${cert.subject||cardName}</div>
+          <div class="hero-sub">${[cert.year,cert.brand,cert.series].filter(Boolean).join(' · ')}</div>
+          <div class="grade-display ${gradeClass(cert.grade)}">
+            <div class="grade-display-num">${cert.grade}</div>
+            <div class="grade-display-label">PSA Grade</div>
+          </div>
+          <div class="hero-cert">
+            <div><div class="cert-pill-label">Cert Number</div><a class="cert-pill" href="https://www.psacard.com/cert/${certNumber}" target="_blank">🔗 ${certNumber}</a></div>
+            <div><div class="cert-pill-label">Verification</div><span class="verify-badge authentic"><span class="dot"></span>Authentic</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="data-grid">
+        <div class="data-card" style="animation-delay:0.05s">
+          <div class="data-card-title"><span>🃏</span> Card Details</div>
+          <div class="field-row"><span class="field-label">Subject</span><span class="field-value gold">${cert.subject||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Year</span><span class="field-value">${cert.year||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Brand</span><span class="field-value">${cert.brand||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Series / Set</span><span class="field-value">${cert.series||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Card Number</span><span class="field-value">${cert.cardNumber||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Variety</span><span class="field-value ${cert.variety?'':'dim'}">${cert.variety||'Standard'}</span></div>
+          <div class="field-row"><span class="field-label">Reverse Holo</span><span class="field-value ${cert.reverse?'green':'dim'}">${cert.reverse?'Yes':'No'}</span></div>
+        </div>
+        <div class="data-card" style="animation-delay:0.1s">
+          <div class="data-card-title"><span>🏅</span> Grading Info</div>
+          <div class="field-row"><span class="field-label">Grade</span><span class="field-value gold">${cert.grade}</span></div>
+          <div class="field-row"><span class="field-label">Description</span><span class="field-value">${cert.gradeText||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Cert Number</span><span class="field-value blue">${cert.certNumber}</span></div>
+          <div class="field-row"><span class="field-label">Label Type</span><span class="field-value">${cert.labelType||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Spec Number</span><span class="field-value dim">${cert.specNo||'—'}</span></div>
+          <div class="field-row"><span class="field-label">Master Set</span><span class="field-value ${cert.isMasterSet?'green':'dim'}">${cert.isMasterSet?'Yes':'No'}</span></div>
+        </div>
+        <div class="data-card" style="animation-delay:0.15s">
+          <div class="data-card-title"><span>📊</span> Population Summary</div>
+          <div class="field-row"><span class="field-label">Total Population</span><span class="field-value gold">${(cert.totalPop||(pop?.total)||0).toLocaleString()}</span></div>
+          <div class="field-row"><span class="field-label">Graded Higher</span><span class="field-value">${(cert.popHigher||0).toLocaleString()}</span></div>
+          ${pop?`
+          <div class="field-row"><span class="field-label">PSA 10 Count</span><span class="field-value green">${(pop.psa10||0).toLocaleString()}</span></div>
+          <div class="field-row"><span class="field-label">PSA 9 Count</span><span class="field-value blue">${(pop.nmMt||0).toLocaleString()}</span></div>
+          <div class="field-row"><span class="field-label">PSA 10 Rarity</span><span class="field-value gold">${pop.total>0?((pop.psa10/pop.total)*100).toFixed(1)+'%':'—'}</span></div>
+          `:`<div class="field-row"><span class="field-label">Detailed Breakdown</span><span class="field-value dim">Not available</span></div>`}
+        </div>
+        <div class="data-card" style="animation-delay:0.2s">
+          <div class="data-card-title"><span>🔗</span> External Links</div>
+          <div class="field-row"><span class="field-label">PSA Cert</span><a href="https://www.psacard.com/cert/${certNumber}" target="_blank" style="color:var(--blue);font-size:12px;font-weight:600;text-decoration:none;">View on PSA ↗</a></div>
+          <div class="field-row"><span class="field-label">Pop Report</span><a href="https://www.psacard.com/pop" target="_blank" style="color:var(--blue);font-size:12px;font-weight:600;text-decoration:none;">PSA Registry ↗</a></div>
+          <div class="field-row"><span class="field-label">eBay Comps</span><a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((cert.subject||cardName)+' PSA '+cert.grade)}&LH_Sold=1&LH_Complete=1" target="_blank" style="color:var(--blue);font-size:12px;font-weight:600;text-decoration:none;">Sold Listings ↗</a></div>
+          <div class="field-row"><span class="field-label">eBay Buy Now</span><a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((cert.subject||cardName)+' PSA '+cert.grade)}&LH_BIN=1" target="_blank" style="color:var(--blue);font-size:12px;font-weight:600;text-decoration:none;">Live Listings ↗</a></div>
+        </div>
+        ${popGrades.length?`
+        <div class="data-card full" style="animation-delay:0.25s">
+          <div class="data-card-title"><span>📈</span> Population by Grade</div>
+          <div class="pop-grid">
+            ${popGrades.map(g=>`<div class="pop-row"><div class="pop-grade-label">${g.label}</div><div class="pop-bar-wrap"><div class="pop-bar" style="width:${Math.round(((g.value||0)/maxPop)*100)}%;background:${barColor(g.label.replace(/\D/g,''))};"></div></div><div class="pop-count">${(g.value||0).toLocaleString()}</div></div>`).join('')}
+          </div>
+        </div>`:''}
+      </div>`;
+  }
+
+  function showError(title,sub){content.innerHTML=`<div class="state-box"><div class="state-icon">⚠</div><div class="state-title">${title}</div><div class="state-sub">${sub}</div></div>`;}
+  loadPSAData();
+</script>
+</body>
+</html>

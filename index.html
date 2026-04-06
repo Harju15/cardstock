@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Stock — Portfolio</title>
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold:#c9a84c; --gold-light:#f0d080; --gold-dim:#7a6030;
+    --gold-pale:rgba(201,168,76,0.10); --black:#0a0a0a;
+    --card-bg:#16140d; --card-border:rgba(201,168,76,0.18);
+    --ink:#f0ead8; --ink-dim:#9a9070; --ink-muted:#5a5440;
+    --up:#4eca8b; --down:#e05555; --blue:#5b9cf6; --purple:#a78bfa; --amber:#f59e0b;
+  }
+  html,body { min-height:100%; background:var(--black); color:var(--ink); font-family:'Raleway',sans-serif; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0; background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,0.07) 0%,transparent 60%); }
+
+  /* NAVBAR */
+  .navbar { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:60px; background:rgba(10,10,8,0.92); backdrop-filter:blur(18px); border-bottom:1px solid var(--card-border); }
+  .nav-logo { font-family:'Cinzel',serif; font-size:18px; font-weight:900; color:var(--ink); letter-spacing:0.04em; text-decoration:none; display:flex; align-items:center; gap:8px; }
+  .nav-logo em { font-style:normal; color:var(--gold); }
+  .nav-logo-icon { width:30px; height:30px; background:var(--gold-pale); border:1px solid var(--card-border); border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .nav-links { display:flex; align-items:center; gap:2px; list-style:none; }
+  .nav-links a { display:block; padding:7px 12px; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-dim); text-decoration:none; border-radius:7px; transition:color 0.2s,background 0.2s; }
+  .nav-links a:hover { color:var(--gold); background:var(--gold-pale); }
+  .nav-links a.active { color:var(--gold-light); background:rgba(201,168,76,0.14); }
+  .nav-avatar { width:34px; height:34px; border-radius:50%; border:2px solid var(--gold-dim); cursor:pointer; background:linear-gradient(135deg,#2a3a1a,#1a2a3a); display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--gold); flex-shrink:0; }
+  .nav-hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; -webkit-tap-highlight-color:transparent; }
+  .nav-hamburger span { display:block; width:22px; height:2px; background:var(--ink-dim); border-radius:2px; }
+  .nav-mobile { display:none; position:fixed; top:60px; left:0; right:0; z-index:99; background:rgba(10,10,8,0.97); backdrop-filter:blur(18px); border-bottom:1px solid var(--card-border); padding:12px 16px 16px; flex-direction:column; gap:4px; }
+  .nav-mobile.open { display:flex; }
+  .nav-mobile a { display:block; padding:12px 16px; font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-dim); text-decoration:none; border-radius:8px; transition:color 0.2s,background 0.2s; }
+  .nav-mobile a:hover,.nav-mobile a.active { color:var(--gold); background:var(--gold-pale); }
+
+  /* PAGE */
+  .page { position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:28px 20px 60px; }
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:24px; gap:10px; flex-wrap:wrap; animation:fadeUp 0.5s ease both; }
+  .page-title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; color:var(--ink); letter-spacing:0.03em; line-height:1; }
+  .page-title span { display:block; font-family:'Raleway',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:4px; }
+  .page-date { font-size:11px; color:var(--ink-muted); letter-spacing:0.06em; text-align:right; }
+  .page-date strong { display:block; font-size:12px; color:var(--ink-dim); font-weight:600; }
+  .divider { height:1px; background:linear-gradient(90deg,transparent,var(--gold-dim),transparent); margin-bottom:24px; }
+
+  /* STAT PILLS */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; animation:fadeUp 0.5s 0.1s ease both; }
+  .stat-pill { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:16px 18px; position:relative; overflow:hidden; transition:border-color 0.2s,transform 0.2s; }
+  .stat-pill:hover { border-color:var(--gold-dim); transform:translateY(-2px); }
+  .stat-pill::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0.5; }
+  .stat-pill-label { font-size:9px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:7px; }
+  .stat-pill-value { font-family:'Cinzel',serif; font-size:22px; font-weight:700; color:var(--ink); margin-bottom:4px; }
+  .stat-pill-change { font-size:11px; font-weight:600; }
+  .stat-pill-change.up { color:var(--up); } .stat-pill-change.down { color:var(--down); }
+  .stat-pill-icon { position:absolute; top:14px; right:16px; font-size:30px; opacity:0.1; }
+
+  /* CHARTS GRID */
+  .main-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .side-grid  { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  .dash-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:20px; position:relative; overflow:hidden; animation:fadeUp 0.5s ease both; transition:border-color 0.25s; }
+  .dash-card:hover { border-color:rgba(201,168,76,0.35); }
+  .dash-card::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,0.03) 0%,transparent 50%); pointer-events:none; border-radius:16px; }
+
+  .dash-card-title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.08em; color:var(--gold); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .badge { font-family:'Raleway',sans-serif; font-size:9px; font-weight:600; letter-spacing:0.1em; background:var(--gold-pale); border:1px solid var(--card-border); color:var(--ink-dim); padding:3px 7px; border-radius:20px; white-space:nowrap; }
+
+  .chart-wrap { position:relative; width:100%; }
+
+  /* TIME TOGGLE */
+  .time-toggle { display:flex; gap:2px; background:rgba(201,168,76,0.06); border:1px solid var(--card-border); border-radius:7px; padding:3px; }
+  .time-btn { font-family:'Raleway',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:4px 9px; border:none; border-radius:4px; background:transparent; color:var(--ink-muted); cursor:pointer; transition:background 0.18s,color 0.18s; -webkit-tap-highlight-color:transparent; }
+  .time-btn:hover { color:var(--gold); background:rgba(201,168,76,0.08); }
+  .time-btn.active { background:var(--gold); color:var(--black); }
+
+  /* MONTH SELECTOR */
+  .month-selector { display:flex; align-items:center; gap:5px; }
+  .month-arrow { width:24px; height:24px; border-radius:5px; border:1px solid var(--card-border); background:rgba(201,168,76,0.06); color:var(--ink-dim); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.18s,color 0.18s; flex-shrink:0; -webkit-tap-highlight-color:transparent; }
+  .month-arrow:hover { background:var(--gold-pale); border-color:var(--gold-dim); color:var(--gold); }
+  .month-label { font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:0.06em; color:var(--gold); min-width:80px; text-align:center; }
+  .month-dots { display:flex; gap:4px; justify-content:center; margin-top:10px; flex-wrap:wrap; }
+  .month-dot { width:7px; height:7px; border-radius:50%; background:var(--card-border); cursor:pointer; transition:background 0.2s,transform 0.2s; }
+  .month-dot.active { background:var(--gold); transform:scale(1.3); }
+
+  /* SPOTLIGHT */
+  .spotlight-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .spotlight-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:20px; display:flex; gap:16px; align-items:center; transition:border-color 0.25s,transform 0.2s; position:relative; overflow:hidden; }
+  .spotlight-card:hover { border-color:rgba(201,168,76,0.4); transform:translateY(-2px); }
+  .spotlight-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,0.04) 0%,transparent 60%); pointer-events:none; }
+  .mini-card { flex:0 0 72px; height:100px; border-radius:8px; border:1.5px solid var(--gold-dim); overflow:hidden; background:linear-gradient(145deg,#1a1200,#0d0d0d); box-shadow:0 6px 20px rgba(0,0,0,0.6); flex-shrink:0; }
+  .mini-card-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .mini-card-placeholder svg { width:30px; height:30px; opacity:0.4; }
+  .spotlight-info { flex:1; min-width:0; }
+  .spotlight-label { font-size:9px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:4px; }
+  .spotlight-name { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--ink); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .spotlight-set { font-size:10px; color:var(--ink-muted); margin-bottom:10px; }
+  .spotlight-value { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:var(--gold-light); line-height:1; margin-bottom:3px; }
+  .spotlight-change { font-size:11px; font-weight:700; }
+  .spotlight-change.up { color:var(--up); } .spotlight-change.down { color:var(--down); }
+
+  /* ACTIVITY TABLE */
+  .activity-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .activity-table th { font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); padding:0 10px 10px; text-align:left; border-bottom:1px solid var(--card-border); }
+  .activity-table td { padding:10px 10px; border-bottom:1px solid rgba(201,168,76,0.06); color:var(--ink-dim); vertical-align:middle; }
+  .activity-table tr:last-child td { border-bottom:none; }
+  .activity-table tr:hover td { background:var(--gold-pale); }
+  .activity-name { font-weight:600; color:var(--ink); font-size:12px; }
+  .activity-set  { font-size:10px; color:var(--ink-muted); }
+  .activity-type { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; letter-spacing:0.06em; white-space:nowrap; }
+  .activity-type.buy  { background:rgba(78,202,139,0.12); color:var(--up); }
+  .activity-type.sell { background:rgba(224,85,85,0.12);  color:var(--down); }
+  .activity-price { font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; }
+  .activity-change.up   { color:var(--up);   font-weight:600; font-size:11px; }
+  .activity-change.down { color:var(--down); font-weight:600; font-size:11px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+  /* RESPONSIVE */
+  @media (max-width:860px)  { .nav-links{display:none;} .nav-hamburger{display:flex;} .main-grid{grid-template-columns:1fr;} .side-grid{grid-template-columns:1fr;} .spotlight-grid{grid-template-columns:1fr;} }
+  @media (max-width:640px)  { .stats-row{grid-template-columns:repeat(2,1fr);} .stat-pill-value{font-size:18px;} .page{padding:20px 14px 48px;} .dash-card{padding:16px;} }
+  @media (max-width:480px)  { .stats-row{grid-template-columns:repeat(2,1fr);} .spotlight-card{flex-direction:column;} .mini-card{width:100%;height:80px;flex:none;} .page-date{display:none;} }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="2" width="14" height="20" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+        <rect x="9" y="5" width="14" height="20" rx="2" fill="#1a1a1a" stroke="#c9a84c" stroke-width="1.5"/>
+        <circle cx="16" cy="15" r="3" fill="#c9a84c" opacity="0.8"/>
+        <path d="M12 10 L20 10" stroke="#c9a84c" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+    </div>
+    Card<em>Stock</em>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="stockpile.html">Stock Pile</a></li>
+    <li><a href="#">Market</a></li>
+    <li><a href="#" class="active">Portfolio</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    <div class="nav-avatar">CS</div>
+  </div>
+</nav>
+
+<div class="nav-mobile" id="navMobile">
+  <a href="#">Home</a>
+  <a href="stockpile.html">Stock Pile</a>
+  <a href="#">Market</a>
+  <a href="#" class="active">Portfolio</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title"><span>Overview</span>Portfolio at a Glance</div>
+    <div class="page-date"><strong>April 4, 2026</strong>Last updated: 2 minutes ago</div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="stats-row">
+    <div class="stat-pill"><div class="stat-pill-label">Total Value</div><div class="stat-pill-value">$14,830</div><div class="stat-pill-change up">▲ +$620 today</div><div class="stat-pill-icon">◈</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Cards Owned</div><div class="stat-pill-value">247</div><div class="stat-pill-change up">▲ +3 this week</div><div class="stat-pill-icon">⬡</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Avg Card Value</div><div class="stat-pill-value">$60.04</div><div class="stat-pill-change up">▲ +$1.20</div><div class="stat-pill-icon">◇</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Realized Gains</div><div class="stat-pill-value">$3,214</div><div class="stat-pill-change down">▼ -$88 this month</div><div class="stat-pill-icon">◎</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="dash-card">
+      <div class="dash-card-title">Top Performers
+        <div class="time-toggle" id="timeToggle">
+          <button class="time-btn" data-range="day">1D</button>
+          <button class="time-btn" data-range="week">1W</button>
+          <button class="time-btn" data-range="month">1M</button>
+          <button class="time-btn active" data-range="year">1Y</button>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px;"><canvas id="lineChart"></canvas></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Portfolio Split <span class="badge">By Category</span></div>
+      <div style="display:flex;align-items:center;gap:20px;height:220px;">
+        <div class="chart-wrap" style="height:200px;flex:1;"><canvas id="donutChart"></canvas></div>
+        <div id="donutLegend" style="flex:0 0 100px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spotlight-grid">
+    <div class="spotlight-card">
+      <div class="mini-card"><div class="mini-card-placeholder"><svg viewBox="0 0 40 40" fill="none"><rect x="4" y="4" width="32" height="32" rx="4" stroke="#c9a84c" stroke-width="1.5" fill="none"/><circle cx="20" cy="18" r="7" stroke="#c9a84c" stroke-width="1.2" fill="none"/><path d="M10 32 Q20 24 30 32" stroke="#c9a84c" stroke-width="1.2" fill="none"/></svg></div></div>
+      <div class="spotlight-info">
+        <div class="spotlight-label">Most Expensive Card</div>
+        <div class="spotlight-name">Black Lotus Alpha</div>
+        <div class="spotlight-set">Magic: The Gathering · 1993</div>
+        <div class="spotlight-value">$8,200</div>
+        <div class="spotlight-change up">▲ +12.4% this month</div>
+      </div>
+    </div>
+    <div class="spotlight-card">
+      <div class="mini-card"><div class="mini-card-placeholder"><svg viewBox="0 0 40 40" fill="none"><path d="M8 28 L16 18 L22 24 L30 12" stroke="#4eca8b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30" cy="12" r="3" fill="#4eca8b"/><rect x="4" y="4" width="32" height="32" rx="4" stroke="#c9a84c" stroke-width="1.5" fill="none"/></svg></div></div>
+      <div class="spotlight-info">
+        <div class="spotlight-label">Biggest Mover</div>
+        <div class="spotlight-name">Charizard Holo 1st Ed.</div>
+        <div class="spotlight-set">Pokémon Base Set · 1999</div>
+        <div class="spotlight-value">$3,450</div>
+        <div class="spotlight-change up">▲ +28.7% this week</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="side-grid">
+    <div class="dash-card">
+      <div class="dash-card-title">Monthly Value
+        <div class="month-selector">
+          <button class="month-arrow" id="monthPrev">&#8249;</button>
+          <div class="month-label" id="monthLabel">April 2026</div>
+          <button class="month-arrow" id="monthNext">&#8250;</button>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:170px;"><canvas id="barChart"></canvas></div>
+      <div class="month-dots" id="monthDots"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Recent Activity <span class="badge">Last 5 trades</span></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="activity-table">
+          <thead><tr><th>Card</th><th>Type</th><th>Price</th><th>Change</th></tr></thead>
+          <tbody>
+            <tr><td><div class="activity-name">Pikachu Illustrator</div><div class="activity-set">Pokémon · Promo</div></td><td><span class="activity-type buy">Buy</span></td><td class="activity-price">$420</td><td class="activity-change up">▲ +6.2%</td></tr>
+            <tr><td><div class="activity-name">Mox Sapphire</div><div class="activity-set">MTG · Beta</div></td><td><span class="activity-type sell">Sell</span></td><td class="activity-price">$1,800</td><td class="activity-change down">▼ -1.4%</td></tr>
+            <tr><td><div class="activity-name">Arcane Sovereign</div><div class="activity-set">Card Stock · S1</div></td><td><span class="activity-type buy">Buy</span></td><td class="activity-price">$240</td><td class="activity-change up">▲ +14.1%</td></tr>
+            <tr><td><div class="activity-name">Blastoise Base Holo</div><div class="activity-set">Pokémon · Base</div></td><td><span class="activity-type sell">Sell</span></td><td class="activity-price">$680</td><td class="activity-change down">▼ -3.8%</td></tr>
+            <tr><td><div class="activity-name">Dark Confidant</div><div class="activity-set">MTG · Ravnica</div></td><td><span class="activity-type buy">Buy</span></td><td class="activity-price">$55</td><td class="activity-change up">▲ +2.9%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Hamburger */
+  const hamburger = document.getElementById('hamburger');
+  const navMobile = document.getElementById('navMobile');
+  hamburger.addEventListener('click', () => navMobile.classList.toggle('open'));
+  document.addEventListener('click', e => { if (!hamburger.contains(e.target) && !navMobile.contains(e.target)) navMobile.classList.remove('open'); });
+
+  Chart.defaults.color = '#5a5440';
+  Chart.defaults.font.family = "'Raleway', sans-serif";
+  const gold='#c9a84c', blue='#5b9cf6', purple='#a78bfa', up='#4eca8b', down='#e05555', amber='#f59e0b';
+
+  /* LINE CHART */
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  function makeGrad(r,g,b,alpha=0.25) { const g2=lineCtx.createLinearGradient(0,0,0,200); g2.addColorStop(0,`rgba(${r},${g},${b},${alpha})`); g2.addColorStop(1,`rgba(${r},${g},${b},0)`); return g2; }
+
+  const rangeData = {
+    day:   { labels:['9am','10am','11am','12pm','1pm','2pm','3pm','4pm'], pokemon:[24.0,24.3,23.8,24.6,25.1,24.9,25.4,25.8], mtg:[22.0,22.1,21.8,22.3,22.7,22.5,22.9,23.2], cardstock:[19.0,19.2,18.9,19.4,19.8,19.6,20.1,20.4], yLabel:v=>'$'+v.toFixed(1)+'k' },
+    week:  { labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], pokemon:[22.4,23.0,23.8,23.2,24.1,24.6,25.8], mtg:[20.8,21.2,21.8,21.4,22.0,22.6,23.2], cardstock:[17.6,18.1,18.7,18.3,19.0,19.7,20.4], yLabel:v=>'$'+v.toFixed(1)+'k' },
+    month: { labels:['Mar 4','Mar 11','Mar 18','Mar 25','Apr 1','Apr 4'], pokemon:[20.1,21.4,22.8,23.5,24.9,25.8], mtg:[18.4,19.6,20.8,21.3,22.4,23.2], cardstock:[15.2,16.4,17.5,18.2,19.4,20.4], yLabel:v=>'$'+v.toFixed(1)+'k' },
+    year:  { labels:['2021','2022','2023','2024','2025'], pokemon:[8,12,16,20,24], mtg:[10,13,15,18,22], cardstock:[5,9,12,16,19], yLabel:v=>'$'+v+'k' },
+  };
+
+  const lineChart = new Chart(lineCtx, {
+    type:'line',
+    data:{ labels:rangeData.year.labels, datasets:[
+      { label:'Pokémon', data:rangeData.year.pokemon, borderColor:gold, backgroundColor:makeGrad(201,168,76), borderWidth:2.5, pointBackgroundColor:gold, pointRadius:3, pointHoverRadius:5, tension:0.4, fill:true },
+      { label:'MTG', data:rangeData.year.mtg, borderColor:blue, backgroundColor:makeGrad(91,156,246,0.2), borderWidth:2.5, pointBackgroundColor:blue, pointRadius:3, pointHoverRadius:5, tension:0.4, fill:true },
+      { label:'Card Stock', data:rangeData.year.cardstock, borderColor:purple, backgroundColor:makeGrad(167,139,250,0.2), borderWidth:2.5, pointBackgroundColor:purple, pointRadius:3, pointHoverRadius:5, tension:0.4, fill:true },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, animation:{duration:400,easing:'easeInOutQuart'},
+      plugins:{ legend:{position:'top',align:'end',labels:{boxWidth:8,boxHeight:8,borderRadius:2,useBorderRadius:true,font:{size:10,weight:'600'},color:'#9a9070',padding:10}}, tooltip:{backgroundColor:'#16140d',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#f0ead8',bodyColor:'#9a9070',padding:10} },
+      scales:{ x:{grid:{color:'rgba(201,168,76,0.06)'},ticks:{font:{size:10}}}, y:{grid:{color:'rgba(201,168,76,0.06)'},ticks:{font:{size:10},callback:v=>rangeData.year.yLabel(v)}} } }
+  });
+
+  let currentRange='year';
+  document.getElementById('timeToggle').addEventListener('click', e => {
+    const btn=e.target.closest('.time-btn'); if(!btn) return;
+    const range=btn.dataset.range; if(range===currentRange) return; currentRange=range;
+    document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+    const d=rangeData[range];
+    lineChart.data.labels=d.labels; lineChart.data.datasets[0].data=d.pokemon; lineChart.data.datasets[1].data=d.mtg; lineChart.data.datasets[2].data=d.cardstock;
+    lineChart.options.scales.y.ticks.callback=v=>d.yLabel(v); lineChart.update();
+  });
+
+  /* DONUT */
+  const donutCtx=document.getElementById('donutChart').getContext('2d');
+  const donutColors=[gold,blue,purple,amber,up], donutLabels=['Pokémon','MTG','Card Stock','Sports','Other'], donutData=[42,28,15,10,5];
+  new Chart(donutCtx,{type:'doughnut',data:{labels:donutLabels,datasets:[{data:donutData,backgroundColor:donutColors,borderColor:'#16140d',borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#16140d',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#f0ead8',bodyColor:'#9a9070',padding:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}%`}}}}});
+  const legend=document.getElementById('donutLegend');
+  donutLabels.forEach((l,i)=>{ const row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:6px;'; row.innerHTML=`<span style="width:8px;height:8px;border-radius:2px;background:${donutColors[i]};flex-shrink:0;"></span><span style="font-size:10px;font-weight:600;color:#9a9070;">${l}</span><span style="font-size:10px;font-weight:700;color:#f0ead8;margin-left:auto;">${donutData[i]}%</span>`; legend.appendChild(row); });
+
+  /* BAR CHART */
+  const barCtx=document.getElementById('barChart').getContext('2d');
+  const barGrad=barCtx.createLinearGradient(0,0,0,170); barGrad.addColorStop(0,'rgba(201,168,76,0.85)'); barGrad.addColorStop(1,'rgba(201,168,76,0.08)');
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthlyData={0:{weeks:['Jan 1','Jan 8','Jan 15','Jan 22','Jan 29'],values:[11200,11450,11800,12050,12100]},1:{weeks:['Feb 5','Feb 12','Feb 19','Feb 26'],values:[12100,12400,12750,13050]},2:{weeks:['Mar 5','Mar 12','Mar 19','Mar 26'],values:[13050,13280,13550,13800]},3:{weeks:['Apr 1','Apr 4'],values:[13800,14830]},4:{weeks:['May 7','May 14','May 21','May 28'],values:[14830,15100,15380,15620]},5:{weeks:['Jun 4','Jun 11','Jun 18','Jun 25'],values:[15620,15900,16200,16480]},6:{weeks:['Jul 2','Jul 9','Jul 16','Jul 23','Jul 30'],values:[16480,16700,16950,17200,17410]},7:{weeks:['Aug 6','Aug 13','Aug 20','Aug 27'],values:[17410,17650,17880,18100]},8:{weeks:['Sep 3','Sep 10','Sep 17','Sep 24'],values:[18100,18350,18600,18820]},9:{weeks:['Oct 1','Oct 8','Oct 15','Oct 22','Oct 29'],values:[18820,19050,19280,19500,19710]},10:{weeks:['Nov 5','Nov 12','Nov 19','Nov 26'],values:[19710,19900,20150,20380]},11:{weeks:['Dec 3','Dec 10','Dec 17','Dec 24','Dec 31'],values:[20380,20600,20850,21100,21400]}};
+  let currentMonth=3;
+  const barChart=new Chart(barCtx,{type:'bar',data:{labels:monthlyData[3].weeks,datasets:[{label:'Portfolio Value',data:monthlyData[3].values,backgroundColor:barGrad,borderColor:gold,borderWidth:1,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:350,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'#16140d',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#f0ead8',bodyColor:'#9a9070',padding:10,callbacks:{label:ctx=>` $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'rgba(201,168,76,0.06)'},ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}});
+
+  const dotsContainer=document.getElementById('monthDots');
+  monthNames.forEach((_,i)=>{ const dot=document.createElement('div'); dot.className='month-dot'+(i===3?' active':''); dot.title=monthNames[i]; dot.addEventListener('click',()=>switchMonth(i)); dotsContainer.appendChild(dot); });
+
+  function switchMonth(idx) {
+    currentMonth=idx; const d=monthlyData[idx];
+    barChart.data.labels=d.weeks; barChart.data.datasets[0].data=d.values; barChart.update();
+    document.getElementById('monthLabel').textContent=monthNames[idx]+' 2026';
+    document.querySelectorAll('.month-dot').forEach((dot,i)=>dot.classList.toggle('active',i===idx));
+    document.getElementById('monthPrev').style.opacity=idx===0?'0.3':'1'; document.getElementById('monthPrev').style.pointerEvents=idx===0?'none':'auto';
+    document.getElementById('monthNext').style.opacity=idx===11?'0.3':'1'; document.getElementById('monthNext').style.pointerEvents=idx===11?'none':'auto';
+  }
+  document.getElementById('monthPrev').addEventListener('click',()=>{ if(currentMonth>0) switchMonth(currentMonth-1); });
+  document.getElementById('monthNext').addEventListener('click',()=>{ if(currentMonth<11) switchMonth(currentMonth+1); });
+  switchMonth(3);
+</script>
+</body>
+</html>
